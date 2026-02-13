@@ -1,0 +1,7 @@
+services:
+  lastcaretaker-calc:
+    build: .
+    container_name: lastcaretaker-calc
+    ports:
+      - "3080:80"
+    restart: unless-stopped

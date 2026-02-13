@@ -1,0 +1,92 @@
+export interface PhysicalStats {
+	weight: number;
+	height: number;
+	lifeExp: number;
+	strength: number;
+	intellect: number;
+}
+
+export interface PsychTraits {
+	adaptability: number;
+	creativity: number;
+	communication: number;
+	discipline: number;
+	empathy: number;
+	focus: number;
+	leadership: number;
+	logic: number;
+	patience: number;
+	wisdom: number;
+}
+
+export interface Ingredients {
+	carbohydrate: number;
+	fat: number;
+	protein: number;
+	calcium: number;
+	omega3: number;
+	vitaminD: number;
+	bioregulator: number;
+	mitoAmplifier: number;
+	naniteNutrient: number;
+}
+
+export interface FoodItem {
+	name: string;
+	icon: string;
+	stats: PhysicalStats;
+	ingredients: Ingredients;
+}
+
+export interface MemoryItem {
+	name: string;
+	icon: string;
+	traits: PsychTraits;
+}
+
+export type ProfessionCategory =
+	| 'Engineer'
+	| 'Arts & Culture'
+	| 'Educator'
+	| 'Agriculture'
+	| 'Logistics'
+	| 'Military'
+	| 'Science'
+	| 'Healthcare'
+	| 'Leadership'
+	| 'Explorer';
+
+export type ProfessionTier = 'T1' | 'T2' | 'T3' | 'T4';
+
+export interface Profession {
+	name: string;
+	category: ProfessionCategory;
+	tier: ProfessionTier;
+	physicalReqs: PhysicalStats;
+	traitReqs: PsychTraits;
+}
+
+export interface Allocation {
+	item: string;
+	quantity: number;
+}
+
+export interface FoodAllocation extends Allocation {
+	food: FoodItem;
+}
+
+export interface MemoryAllocation extends Allocation {
+	memory: MemoryItem;
+}
+
+export interface OptimizationResult {
+	feasible: boolean;
+	foodAllocations: FoodAllocation[];
+	memoryAllocations: MemoryAllocation[];
+	totalFoodItems: number;
+	totalMemoryItems: number;
+	totalItems: number;
+	achievedStats: PhysicalStats;
+	achievedTraits: PsychTraits;
+	totalIngredients: Ingredients;
+}

@@ -6,9 +6,32 @@
 	import { memoryItems } from '$lib/data/memories';
 	import type { ProfessionMatch } from '$lib/types';
 
-	let inventory = $state<Record<string, number>>(
-		Object.fromEntries(memoryItems.map(m => [m.name, 0]))
-	);
+	const STORAGE_KEY = 'tlc-inventory';
+
+	function loadInventory(): Record<string, number> {
+		const defaults = Object.fromEntries(memoryItems.map(m => [m.name, 0]));
+		try {
+			const saved = localStorage.getItem(STORAGE_KEY);
+			if (saved) {
+				const parsed = JSON.parse(saved);
+				// Merge with defaults to handle new/removed memory items
+				for (const key of Object.keys(defaults)) {
+					if (typeof parsed[key] === 'number' && parsed[key] >= 0) {
+						defaults[key] = parsed[key];
+					}
+				}
+			}
+		} catch {
+			// ignore parse errors
+		}
+		return defaults;
+	}
+
+	let inventory = $state<Record<string, number>>(loadInventory());
+
+	$effect(() => {
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory));
+	});
 
 	const matches = $derived<ProfessionMatch[]>(rankProfessionsByInventory(inventory));
 

@@ -12,32 +12,27 @@
 		result: OptimizationResult;
 	} = $props();
 
-	let activeTab = $state<'optimal' | 'capped'>('optimal');
+	let activeTab = $state<'optimal' | 'minUnique'>('optimal');
 
 	const showMemoryAllocations = $derived(
-		activeTab === 'capped' ? result.memoryAllocationsCapped : result.memoryAllocations
+		activeTab === 'minUnique' ? result.memoryAllocationsMinUnique : result.memoryAllocations
 	);
 	const showAchievedTraits = $derived(
-		activeTab === 'capped' ? result.achievedTraitsCapped : result.achievedTraits
+		activeTab === 'minUnique' ? result.achievedTraitsMinUnique : result.achievedTraits
 	);
 	const showTotalMemoryItems = $derived(
-		activeTab === 'capped' ? result.totalMemoryItemsCapped : result.totalMemoryItems
+		activeTab === 'minUnique' ? result.totalMemoryItemsMinUnique : result.totalMemoryItems
 	);
 	const showTotalItems = $derived(
-		activeTab === 'capped' ? result.totalItemsCapped : result.totalItems
+		activeTab === 'minUnique' ? result.totalItemsMinUnique : result.totalItems
 	);
-	const showFeasible = $derived(
-		activeTab === 'capped'
-			? (result.feasible && result.cappedFeasible) || (!result.feasible && result.cappedFeasible)
-			: result.feasible
-	);
-	const cappedInfeasible = $derived(
-		activeTab === 'capped' && !result.cappedFeasible
+	const altInfeasible = $derived(
+		activeTab === 'minUnique' && !result.minUniqueFeasible
 	);
 </script>
 
 <div class="results">
-	{#if !result.feasible && !result.cappedFeasible}
+	{#if !result.feasible && !result.minUniqueFeasible}
 		<div class="card error-card">
 			<h3>Optimization Failed</h3>
 			<p>No feasible solution found for this profession's requirements. This may indicate a data error.</p>
@@ -54,7 +49,14 @@
 					<span class="sub-count">{result.totalFoodItems} food</span>
 				{/if}
 				{#if showTotalMemoryItems > 0}
-					<span class="sub-count">{showTotalMemoryItems} memories</span>
+					<span class="sub-count">
+						{showTotalMemoryItems} memories
+						{#if activeTab === 'minUnique'}
+							({result.uniqueMemoryTypes} types)
+						{:else}
+							({result.memoryAllocations.length} types)
+						{/if}
+					</span>
 				{/if}
 			</div>
 		</div>
@@ -74,21 +76,21 @@
 				class:active={activeTab === 'optimal'}
 				onclick={() => activeTab = 'optimal'}
 			>
-				Optimal ({result.totalMemoryItems} memories)
+				Fewest Items ({result.totalMemoryItems})
 			</button>
 			<button
 				class="tab-btn"
-				class:active={activeTab === 'capped'}
-				onclick={() => activeTab = 'capped'}
+				class:active={activeTab === 'minUnique'}
+				onclick={() => activeTab = 'minUnique'}
 			>
-				Max 3 Each ({result.cappedFeasible ? result.totalMemoryItemsCapped + ' memories' : 'infeasible'})
+				Fewest Types ({result.minUniqueFeasible ? result.uniqueMemoryTypes + ' types' : 'infeasible'})
 			</button>
 		</div>
 
-		{#if cappedInfeasible}
+		{#if altInfeasible}
 			<div class="card error-card">
-				<h3>Capped Solution Infeasible</h3>
-				<p>Cannot meet this profession's trait requirements with a maximum of 3 copies per memory type.</p>
+				<h3>No Feasible Solution</h3>
+				<p>Cannot find a feasible solution with this optimization strategy.</p>
 			</div>
 		{:else}
 			<div class="card">

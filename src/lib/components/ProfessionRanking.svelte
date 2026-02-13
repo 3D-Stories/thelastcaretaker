@@ -71,7 +71,7 @@
 						<div class="match-status">
 							{#if match.achievable}
 								<span class="status-badge achievable-badge">
-									{match.totalFoodItems > 0 ? `${match.totalFoodItems} food needed` : 'No food needed'}
+									{match.totalMemoryItems} mem{match.totalFoodItems > 0 ? ` + ${match.totalFoodItems} food` : ''}
 								</span>
 							{:else}
 								<span class="status-badge partial-badge">{match.traitCoverage}% traits</span>
@@ -83,9 +83,24 @@
 					{#if expanded}
 						<div class="match-details">
 							{#if match.achievable}
+								{#if match.memoryAllocations.length > 0}
+									<div class="detail-section">
+										<h4 class="detail-title">Memory Items Needed ({match.totalMemoryItems} items)</h4>
+										<div class="food-list">
+											{#each match.memoryAllocations as alloc}
+												<div class="food-item">
+													<img class="item-icon" src={alloc.memory.icon} alt={alloc.memory.name} />
+													<span class="food-name">{alloc.memory.name}</span>
+													<span class="food-qty">x{alloc.quantity}</span>
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/if}
+
 								{#if match.foodAllocations.length > 0}
 									<div class="detail-section">
-										<h4 class="detail-title">Food Items Needed</h4>
+										<h4 class="detail-title">Food Items Needed ({match.totalFoodItems} items)</h4>
 										<div class="food-list">
 											{#each match.foodAllocations as alloc}
 												<div class="food-item">

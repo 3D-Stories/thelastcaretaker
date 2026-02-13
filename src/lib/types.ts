@@ -89,12 +89,13 @@ export interface OptimizationResult {
 	achievedStats: PhysicalStats;
 	achievedTraits: PsychTraits;
 	totalIngredients: Ingredients;
-	// Capped variant (max N per memory type)
-	cappedFeasible: boolean;
-	memoryAllocationsCapped: MemoryAllocation[];
-	totalMemoryItemsCapped: number;
-	totalItemsCapped: number;
-	achievedTraitsCapped: PsychTraits;
+	// Fewest-unique-types variant (minimize distinct memory types)
+	minUniqueFeasible: boolean;
+	memoryAllocationsMinUnique: MemoryAllocation[];
+	totalMemoryItemsMinUnique: number;
+	totalItemsMinUnique: number;
+	achievedTraitsMinUnique: PsychTraits;
+	uniqueMemoryTypes: number;
 }
 
 export interface TraitShortfall {
@@ -109,6 +110,8 @@ export interface ProfessionMatch {
 	traitCoverage: number;
 	achievedTraits: PsychTraits;
 	shortfalls: TraitShortfall[];
+	memoryAllocations: MemoryAllocation[];
+	totalMemoryItems: number;
 	foodAllocations: FoodAllocation[];
 	totalFoodItems: number;
 	achievedStats: PhysicalStats;

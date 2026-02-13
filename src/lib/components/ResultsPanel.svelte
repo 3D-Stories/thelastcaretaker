@@ -11,10 +11,33 @@
 		profession: Profession;
 		result: OptimizationResult;
 	} = $props();
+
+	let activeTab = $state<'optimal' | 'capped'>('optimal');
+
+	const showMemoryAllocations = $derived(
+		activeTab === 'capped' ? result.memoryAllocationsCapped : result.memoryAllocations
+	);
+	const showAchievedTraits = $derived(
+		activeTab === 'capped' ? result.achievedTraitsCapped : result.achievedTraits
+	);
+	const showTotalMemoryItems = $derived(
+		activeTab === 'capped' ? result.totalMemoryItemsCapped : result.totalMemoryItems
+	);
+	const showTotalItems = $derived(
+		activeTab === 'capped' ? result.totalItemsCapped : result.totalItems
+	);
+	const showFeasible = $derived(
+		activeTab === 'capped'
+			? (result.feasible && result.cappedFeasible) || (!result.feasible && result.cappedFeasible)
+			: result.feasible
+	);
+	const cappedInfeasible = $derived(
+		activeTab === 'capped' && !result.cappedFeasible
+	);
 </script>
 
 <div class="results">
-	{#if !result.feasible}
+	{#if !result.feasible && !result.cappedFeasible}
 		<div class="card error-card">
 			<h3>Optimization Failed</h3>
 			<p>No feasible solution found for this profession's requirements. This may indicate a data error.</p>
@@ -23,15 +46,15 @@
 		<div class="total-summary card">
 			<h3>Optimal Build</h3>
 			<div class="total-count">
-				<span class="total-number">{result.totalItems}</span>
+				<span class="total-number">{showTotalItems}</span>
 				<span class="total-label">total items</span>
 			</div>
 			<div class="total-breakdown">
 				{#if result.totalFoodItems > 0}
 					<span class="sub-count">{result.totalFoodItems} food</span>
 				{/if}
-				{#if result.totalMemoryItems > 0}
-					<span class="sub-count">{result.totalMemoryItems} memories</span>
+				{#if showTotalMemoryItems > 0}
+					<span class="sub-count">{showTotalMemoryItems} memories</span>
 				{/if}
 			</div>
 		</div>
@@ -45,19 +68,43 @@
 			</div>
 		{/if}
 
-		<div class="card">
-			<StatsTable
-				achievedStats={result.achievedStats}
-				requiredStats={profession.physicalReqs}
-				achievedTraits={result.achievedTraits}
-				requiredTraits={profession.traitReqs}
-			/>
+		<div class="tab-bar">
+			<button
+				class="tab-btn"
+				class:active={activeTab === 'optimal'}
+				onclick={() => activeTab = 'optimal'}
+			>
+				Optimal ({result.totalMemoryItems} memories)
+			</button>
+			<button
+				class="tab-btn"
+				class:active={activeTab === 'capped'}
+				onclick={() => activeTab = 'capped'}
+			>
+				Max 3 Each ({result.cappedFeasible ? result.totalMemoryItemsCapped + ' memories' : 'infeasible'})
+			</button>
 		</div>
 
-		{#if result.memoryAllocations.length > 0}
-			<div class="card">
-				<MemoryBreakdown allocations={result.memoryAllocations} />
+		{#if cappedInfeasible}
+			<div class="card error-card">
+				<h3>Capped Solution Infeasible</h3>
+				<p>Cannot meet this profession's trait requirements with a maximum of 3 copies per memory type.</p>
 			</div>
+		{:else}
+			<div class="card">
+				<StatsTable
+					achievedStats={result.achievedStats}
+					requiredStats={profession.physicalReqs}
+					achievedTraits={showAchievedTraits}
+					requiredTraits={profession.traitReqs}
+				/>
+			</div>
+
+			{#if showMemoryAllocations.length > 0}
+				<div class="card">
+					<MemoryBreakdown allocations={showMemoryAllocations} />
+				</div>
+			{/if}
 		{/if}
 	{/if}
 </div>
@@ -129,5 +176,37 @@
 		padding: 4px 12px;
 		background: var(--bg-secondary);
 		border-radius: 20px;
+	}
+
+	.tab-bar {
+		display: flex;
+		gap: 4px;
+		background: var(--bg-secondary);
+		border-radius: 10px;
+		padding: 4px;
+	}
+
+	.tab-btn {
+		flex: 1;
+		padding: 10px 16px;
+		border: none;
+		border-radius: 8px;
+		background: transparent;
+		color: var(--text-secondary);
+		font-size: 0.85rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.tab-btn:hover {
+		color: var(--text-primary);
+		background: var(--bg-hover);
+	}
+
+	.tab-btn.active {
+		background: var(--accent);
+		color: white;
+		box-shadow: 0 2px 8px var(--accent-glow);
 	}
 </style>

@@ -1,46 +1,49 @@
 <script lang="ts">
-	import '../app.css';
-	import ProfessionPicker from '$lib/components/ProfessionPicker.svelte';
-	import ResultsPanel from '$lib/components/ResultsPanel.svelte';
-	import { optimizeBuild } from '$lib/solver';
-	import type { Profession, OptimizationResult } from '$lib/types';
+	import '../../app.css';
+	import InventoryGrid from '$lib/components/InventoryGrid.svelte';
+	import ProfessionRanking from '$lib/components/ProfessionRanking.svelte';
+	import { rankProfessionsByInventory } from '$lib/solver';
+	import { memoryItems } from '$lib/data/memories';
+	import type { ProfessionMatch } from '$lib/types';
 
-	let selectedProfession = $state<Profession | null>(null);
-
-	const result = $derived<OptimizationResult | null>(
-		selectedProfession
-			? optimizeBuild(selectedProfession.physicalReqs, selectedProfession.traitReqs)
-			: null
+	let inventory = $state<Record<string, number>>(
+		Object.fromEntries(memoryItems.map(m => [m.name, 0]))
 	);
+
+	const matches = $derived<ProfessionMatch[]>(rankProfessionsByInventory(inventory));
+
+	const hasItems = $derived(Object.values(inventory).some(v => v > 0));
 </script>
 
 <svelte:head>
-	<title>The Last Caretaker - Build Optimizer</title>
+	<title>The Last Caretaker - Inventory Mode</title>
 </svelte:head>
 
 <div class="app">
 	<header>
 		<h1>The Last Caretaker</h1>
-		<p class="subtitle">Profession Build Optimizer</p>
+		<p class="subtitle">Inventory Mode</p>
 		<nav class="page-nav">
-			<span class="nav-current">Build Optimizer</span>
+			<a href="/">Build Optimizer</a>
 			<span class="nav-sep">|</span>
-			<a href="/inventory">Inventory Mode</a>
+			<span class="nav-current">Inventory Mode</span>
 		</nav>
 	</header>
 
 	<main>
-		<section class="card picker-section">
-			<ProfessionPicker bind:selectedProfession />
+		<section class="card inventory-section">
+			<InventoryGrid bind:inventory />
 		</section>
 
-		{#if selectedProfession && result}
-			<ResultsPanel profession={selectedProfession} {result} />
+		{#if hasItems}
+			<section class="card">
+				<ProfessionRanking {matches} />
+			</section>
 		{:else}
 			<div class="placeholder card">
-				<div class="placeholder-icon">&#9881;</div>
-				<p>Select a profession to compute the optimal build</p>
-				<p class="placeholder-sub">Choose a category and profession above to get started</p>
+				<div class="placeholder-icon">&#128218;</div>
+				<p>Add memories to your inventory</p>
+				<p class="placeholder-sub">Set quantities above to see which professions you can achieve</p>
 			</div>
 		{/if}
 	</main>
@@ -115,11 +118,13 @@
 		gap: 16px;
 	}
 
-	.picker-section {
+	.inventory-section {
 		position: sticky;
 		top: 0;
 		z-index: 10;
 		background: var(--bg-card);
+		max-height: 60vh;
+		overflow-y: auto;
 	}
 
 	.placeholder {

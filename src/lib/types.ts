@@ -89,4 +89,28 @@ export interface OptimizationResult {
 	achievedStats: PhysicalStats;
 	achievedTraits: PsychTraits;
 	totalIngredients: Ingredients;
+	// Capped variant (max N per memory type)
+	cappedFeasible: boolean;
+	memoryAllocationsCapped: MemoryAllocation[];
+	totalMemoryItemsCapped: number;
+	totalItemsCapped: number;
+	achievedTraitsCapped: PsychTraits;
+}
+
+export interface TraitShortfall {
+	trait: string;
+	have: number;
+	need: number;
+}
+
+export interface ProfessionMatch {
+	profession: Profession;
+	achievable: boolean;
+	traitCoverage: number;
+	achievedTraits: PsychTraits;
+	shortfalls: TraitShortfall[];
+	foodAllocations: FoodAllocation[];
+	totalFoodItems: number;
+	achievedStats: PhysicalStats;
+	totalIngredients: Ingredients;
 }
